@@ -1,0 +1,39 @@
+name: Docker Build and Deploy to web app 
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest 
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+ 
+
+    - name: Login to Azure Container Registry (ACR)
+      uses: azure/login@v1
+      with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+ 
+
+    - name: Build Docker image
+      run: docker build --tag swim-ops .
+ 
+
+    - name: Tag Docker image
+      run: docker tag swim-ops 4ssacrtest.azurecr.io/swim-ops:latest 
+
+    - name: Login to Azure Container Registry
+      run: docker login 4ssacrtest.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }}
+ 
+
+    - name: Push Docker image to Azure Container Registry
+      run: docker push 4ssacrtest.azurecr.io/swim-ops:latest
+
+    - name: Deploy to Azure Web App
+      run: az webapp config container set --resource-group 4ss-products-test-rg --name swim-a-service-test --docker-custom-image-name 4ssacrtest.azurecr.io/swim-ops:latest --docker-registry-server-url https://4ssacrtest.azurecr.io --docker-registry-server-user ${{ secrets.ACR_USERNAME }} --docker-registry-server-password ${{ secrets.ACR_PASSWORD }} --settings website-container-start-time-limit=1800
