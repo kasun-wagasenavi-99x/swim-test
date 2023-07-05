@@ -14,16 +14,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
  
+    - name: Install Azure CLI
+      run: |
+       curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
     - name: Login to Azure Container Registry (ACR)
       uses: azure/login@v1
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
- 
-
-    - name: Install Azure CLI
-      run: |
-       curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    
        
     - name: Build Docker image
       run: docker build --tag swim-ops .
